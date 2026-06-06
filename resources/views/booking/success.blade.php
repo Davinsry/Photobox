@@ -143,26 +143,16 @@
                             </div>
                         </div>
                         
-                        <p class="text-slate-400 text-[10px] mt-3 leading-relaxed text-center">Silakan buka aplikasi <strong>MockBank</strong>, masuk ke menu <strong>Bayar &gt; Studioku</strong>, masukkan nomor rekening pembayaran (Kode Booking) di atas, lalu selesaikan transaksi.</p>
-                    </div>
-                @endif
-
-                <!-- Developer Local Simulation Option -->
-                <div class="bg-indigo-500/5 rounded-2xl p-5 border border-indigo-500/15 text-center">
-                    <h4 class="text-indigo-300 text-xs font-bold mb-1.5 font-outfit">Simulasi Pembayaran (Local Dev)</h4>
-                    <p class="text-slate-400 text-[10px] mb-4 leading-normal">Gunakan tombol simulasi di bawah jika Anda ingin membayar langsung tanpa melalui MockBank:</p>
-                    
-                    <form action="{{ route('payment.simulate', $booking->booking_code) }}" method="POST" class="flex flex-col sm:flex-row justify-center gap-3">
-                        @csrf
-                        <button type="submit" name="simulate_status" value="paid" class="w-full px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-emerald-500/15 hover:scale-[1.02]">
-                            Bayar Sekarang (Simulasi)
-                        </button>
-                        <button type="submit" name="simulate_status" value="cancelled" class="w-full px-4 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-bold rounded-xl border border-rose-500/20 transition-all hover:scale-[1.02]">
-                            Batalkan
-                        </button>
-                    </form>
+                            <!-- Refresh Status Button -->
+                            <div class="mt-4">
+                                <button onclick="window.location.reload();" class="w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-indigo-500/15 flex items-center justify-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.5"></path></svg>
+                                    Refresh Status Pembayaran
+                                </button>
+                            </div>
+                        </div>
+                    @endif
                 </div>
-            </div>
             @elseif($booking->payment && $booking->payment->payment_method === 'cash')
             <div class="mt-6 border-t border-white/[0.05] pt-6">
                 <div class="bg-indigo-500/5 rounded-2xl p-5 border border-indigo-500/15 text-center">
@@ -174,13 +164,21 @@
             @endif
         </div>
 
-        <div class="flex flex-col sm:flex-row gap-4 justify-center max-w-sm mx-auto">
-            <a href="{{ route('home') }}" class="w-full px-6 py-3.5 bg-white/5 border border-white/5 text-slate-300 font-bold rounded-2xl text-xs hover:bg-white/10 hover:text-white transition-all text-center">
+        <div class="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
+            @if($booking->status == 'pending' && $booking->payment && $booking->payment->payment_method !== 'cash')
+                <button onclick="window.location.reload();" class="w-full px-6 py-3.5 bg-indigo-500 text-white font-bold rounded-2xl text-xs hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-500/25 text-center hover:scale-[1.02] flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.5"></path></svg>
+                    Refresh Status
+                </button>
+            @endif
+            <a href="{{ route('home') }}" class="w-full px-6 py-3.5 bg-white/5 border border-white/5 text-slate-300 font-bold rounded-2xl text-xs hover:bg-white/10 hover:text-white transition-all text-center flex items-center justify-center">
                 Kembali ke Beranda
             </a>
-            <a href="{{ route('booking.cek.form') }}?booking_code={{ $booking->booking_code }}&guest_email={{ $booking->guest_email }}" class="w-full px-6 py-3.5 bg-indigo-500 text-white font-bold rounded-2xl text-xs hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-500/25 text-center hover:scale-[1.02]">
-                Lihat Detail Status
-            </a>
+            @if($booking->status != 'pending')
+                <a href="{{ route('booking.cek.form') }}?booking_code={{ $booking->booking_code }}&guest_email={{ $booking->guest_email }}" class="w-full px-6 py-3.5 bg-indigo-500 text-white font-bold rounded-2xl text-xs hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-500/25 text-center hover:scale-[1.02] flex items-center justify-center">
+                    Lihat Detail Status
+                </a>
+            @endif
         </div>
     </div>
 </div>
@@ -188,32 +186,52 @@
 
 @if($booking->status == 'pending' && $booking->payment && $booking->payment->payment_method !== 'cash')
 @section('scripts')
+@php
+    $remainingSeconds = 0;
+    if ($booking->created_at) {
+        $remainingSeconds = max(0, 300 - now()->diffInSeconds($booking->created_at));
+    }
+@endphp
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const createdAt = new Date("{{ $booking->created_at->toIso8601String() }}").getTime();
-        const expiryTime = createdAt + (5 * 60 * 1000); // 5 minutes in milliseconds
+        let remainingSeconds = {{ $remainingSeconds }};
 
         function updateTimer() {
-            const now = new Date().getTime();
-            const distance = expiryTime - now;
-
-            if (distance <= 0) {
+            if (remainingSeconds <= 0) {
                 clearInterval(timerInterval);
                 document.getElementById("countdown").innerHTML = "00:00";
                 window.location.reload();
             } else {
-                const minutes = Math.floor(distance / (60 * 1000));
-                const seconds = Math.floor((distance % (60 * 1000)) / 1000);
+                const minutes = Math.floor(remainingSeconds / 60);
+                const seconds = remainingSeconds % 60;
                 
                 const displayMinutes = minutes < 10 ? "0" + minutes : minutes;
                 const displaySeconds = seconds < 10 ? "0" + seconds : seconds;
                 
                 document.getElementById("countdown").textContent = displayMinutes + ":" + displaySeconds;
+                remainingSeconds--;
             }
         }
 
         updateTimer();
         const timerInterval = setInterval(updateTimer, 1000);
+
+        // Poll payment status every 3 seconds to auto-reload once paid
+        const checkStatusInterval = setInterval(async function() {
+            try {
+                const response = await fetch("/payment/api-check/{{ $booking->booking_code }}");
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.payment_status === 'paid' || data.status === 'paid') {
+                        clearInterval(checkStatusInterval);
+                        clearInterval(timerInterval);
+                        window.location.reload();
+                    }
+                }
+            } catch (error) {
+                console.error('Error polling status:', error);
+            }
+        }, 3000);
     });
 </script>
 @endsection

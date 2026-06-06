@@ -204,20 +204,13 @@
                                     <p class="text-slate-400 text-[10px] mt-3 leading-relaxed text-center">Silakan buka aplikasi <strong>MockBank</strong>, masuk ke menu <strong>Bayar &gt; Studioku</strong>, masukkan nomor rekening pembayaran (Kode Booking) di atas, lalu selesaikan transaksi.</p>
                                 </div>
                             @endif
-
-                            <!-- Developer Simulation Options -->
-                            <div class="bg-indigo-500/5 border border-indigo-500/20 rounded-xl p-4 text-center mt-4">
-                                <p class="text-indigo-300 text-[10px] leading-relaxed mb-3.5">Ini adalah lingkungan pengembangan lokal. Anda dapat mensimulasikan pembayaran untuk mengubah status reservasi ini secara instan.</p>
-                                
-                                <form action="{{ route('payment.simulate', $booking->booking_code) }}" method="POST" class="flex flex-col sm:flex-row gap-3.5 justify-center">
-                                    @csrf
-                                    <button type="submit" name="simulate_status" value="paid" class="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-emerald-500/15">
-                                        Simulasikan Sukses (Bayar)
-                                    </button>
-                                    <button type="submit" name="simulate_status" value="cancelled" class="px-4 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold text-xs rounded-xl border border-rose-500/20 transition-all">
-                                        Simulasikan Batal
-                                    </button>
-                                </form>
+                            
+                            <!-- Refresh Button for Pending Payments -->
+                            <div class="mt-4">
+                                <button onclick="window.location.reload();" class="w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-indigo-500/15 flex items-center justify-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.5"></path></svg>
+                                    Refresh Status Pembayaran
+                                </button>
                             </div>
                         </div>
                     @elseif($booking->status == 'pending' && $booking->payment && $booking->payment->payment_method === 'cash')
@@ -247,32 +240,52 @@
 
 @if(isset($booking) && $booking->status == 'pending' && $booking->payment && $booking->payment->payment_method !== 'cash')
 @section('scripts')
+@php
+    $remainingSeconds = 0;
+    if ($booking->created_at) {
+        $remainingSeconds = max(0, 300 - now()->diffInSeconds($booking->created_at));
+    }
+@endphp
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const createdAt = new Date("{{ $booking->created_at->toIso8601String() }}").getTime();
-        const expiryTime = createdAt + (5 * 60 * 1000); // 5 minutes in milliseconds
+        let remainingSeconds = {{ $remainingSeconds }};
 
         function updateTimer() {
-            const now = new Date().getTime();
-            const distance = expiryTime - now;
-
-            if (distance <= 0) {
+            if (remainingSeconds <= 0) {
                 clearInterval(timerInterval);
                 document.getElementById("countdown").innerHTML = "00:00";
                 window.location.reload();
             } else {
-                const minutes = Math.floor(distance / (60 * 1000));
-                const seconds = Math.floor((distance % (60 * 1000)) / 1000);
+                const minutes = Math.floor(remainingSeconds / 60);
+                const seconds = remainingSeconds % 60;
                 
                 const displayMinutes = minutes < 10 ? "0" + minutes : minutes;
                 const displaySeconds = seconds < 10 ? "0" + seconds : seconds;
                 
                 document.getElementById("countdown").textContent = displayMinutes + ":" + displaySeconds;
+                remainingSeconds--;
             }
         }
 
         updateTimer();
         const timerInterval = setInterval(updateTimer, 1000);
+
+        // Poll payment status every 3 seconds to auto-reload once paid
+        const checkStatusInterval = setInterval(async function() {
+            try {
+                const response = await fetch("/payment/api-check/{{ $booking->booking_code }}");
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.payment_status === 'paid' || data.status === 'paid') {
+                        clearInterval(checkStatusInterval);
+                        clearInterval(timerInterval);
+                        window.location.reload();
+                    }
+                }
+            } catch (error) {
+                console.error('Error polling status:', error);
+            }
+        }, 3000);
     });
 </script>
 @endsection

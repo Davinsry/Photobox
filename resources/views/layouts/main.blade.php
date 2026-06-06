@@ -47,13 +47,30 @@
                 </div>
 
                 <!-- Quick actions -->
-                <div class="flex items-center space-x-6">
-                    <a href="{{ route('admin.login') }}" class="text-xs font-semibold text-slate-400 hover:text-white transition-colors">Admin Area</a>
-                    <a href="{{ route('booking.step1') }}" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-xs font-bold transition-all shadow-lg shadow-indigo-500/20 hover:scale-[1.03] active:scale-[0.98]">
+                <div class="flex items-center space-x-4">
+                    <a href="{{ route('admin.login') }}" class="hidden sm:inline-block text-xs font-semibold text-slate-400 hover:text-white transition-colors">Admin Area</a>
+                    <a href="{{ route('booking.step1') }}" class="px-4 py-2 sm:px-5 sm:py-2.5 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-xs font-bold transition-all shadow-lg shadow-indigo-500/20 hover:scale-[1.03] active:scale-[0.98]">
                         Book Now
                     </a>
+                    <!-- Hamburger Menu Button -->
+                    <button id="mobile-menu-button" class="md:hidden p-2 text-slate-400 hover:text-white focus:outline-none transition-colors" aria-label="Toggle Menu">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path id="menu-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            <path id="close-icon" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
                 </div>
             </div>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div id="mobile-menu" class="hidden md:hidden border-t border-white/5 px-6 py-4 space-y-2 flex flex-col rounded-b-3xl bg-slate-950/90 backdrop-blur-2xl">
+            <a href="{{ route('home') }}" class="text-sm py-2 px-3 rounded-xl transition-colors {{ request()->routeIs('home') ? 'bg-indigo-500/10 text-indigo-400 font-bold' : 'text-slate-300 hover:text-white hover:bg-white/5' }}">Home</a>
+            <a href="{{ route('layanan') }}" class="text-sm py-2 px-3 rounded-xl transition-colors {{ request()->routeIs('layanan') ? 'bg-indigo-500/10 text-indigo-400 font-bold' : 'text-slate-300 hover:text-white hover:bg-white/5' }}">Layanan</a>
+            <a href="{{ route('galeri') }}" class="text-sm py-2 px-3 rounded-xl transition-colors {{ request()->routeIs('galeri') ? 'bg-indigo-500/10 text-indigo-400 font-bold' : 'text-slate-300 hover:text-white hover:bg-white/5' }}">Galeri</a>
+            <a href="{{ route('testimoni') }}" class="text-sm py-2 px-3 rounded-xl transition-colors {{ request()->routeIs('testimoni') ? 'bg-indigo-500/10 text-indigo-400 font-bold' : 'text-slate-300 hover:text-white hover:bg-white/5' }}">Testimoni</a>
+            <a href="{{ route('booking.cek.form') }}" class="text-sm py-2 px-3 rounded-xl transition-colors {{ request()->routeIs('booking.cek.*') ? 'bg-indigo-500/10 text-indigo-400 font-bold' : 'text-slate-300 hover:text-white hover:bg-white/5' }}">Cek Booking</a>
+            <a href="{{ route('admin.login') }}" class="text-sm py-2 px-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-colors border-t border-white/5 pt-3 mt-1 sm:hidden">Admin Area</a>
         </div>
     </header>
 
@@ -100,5 +117,28 @@
     </footer>
 
     @yield('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuBtn = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const menuIcon = document.getElementById('menu-icon');
+            const closeIcon = document.getElementById('close-icon');
+
+            if (menuBtn && mobileMenu) {
+                menuBtn.addEventListener('click', function() {
+                    const isHidden = mobileMenu.classList.contains('hidden');
+                    if (isHidden) {
+                        mobileMenu.classList.remove('hidden');
+                        menuIcon.classList.add('hidden');
+                        closeIcon.classList.remove('hidden');
+                    } else {
+                        mobileMenu.classList.add('hidden');
+                        menuIcon.classList.remove('hidden');
+                        closeIcon.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
