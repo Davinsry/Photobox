@@ -157,7 +157,65 @@
                         <div class="mt-4 space-y-4">
                             @if($booking->payment->payment_method === 'qris')
                                 <!-- QRIS CARD -->
-                                <div class="bg-white/5 rounded-2xl p-5 border border-white/10 text-center">
+                                 <div class="bg-white/5 rounded-2xl p-5 border border-white/10 text-center">
+                                    @php
+                                        $qrisString = $booking->booking_code;
+                                        try {
+                                            if (!function_exists('qris_tlv')) {
+                                                function qris_tlv($tag, $value) {
+                                                    $length = str_pad((string) strlen($value), 2, '0', STR_PAD_LEFT);
+                                                    return $tag . $length . $value;
+                                                }
+                                            }
+                                            if (!function_exists('qris_crc16')) {
+                                                function qris_crc16($data) {
+                                                    $crc = 0xFFFF;
+                                                    $length = strlen($data);
+                                                    for ($i = 0; $i < $length; $i++) {
+                                                        $x = (($crc >> 8) ^ ord($data[$i])) & 0xFF;
+                                                        $x ^= $x >> 4;
+                                                        $crc = (($crc << 8) ^ ($x << 12) ^ ($x << 5) ^ $x) & 0xFFFF;
+                                                    }
+                                                    return strtoupper(str_pad(dechex($crc), 4, '0', STR_PAD_LEFT));
+                                                }
+                                            }
+                                            if (!function_exists('generate_qris_string')) {
+                                                function generate_qris_string($merchantName, $amount, $referenceId) {
+                                                    $data = '';
+                                                    $data .= qris_tlv('00', '01');
+                                                    $data .= qris_tlv('01', $amount ? '11' : '12');
+                                                    
+                                                    $merchantInfo = '';
+                                                    $merchantInfo .= qris_tlv('00', 'ID.CO.QRIS.WWW');
+                                                    $mid = str_pad(substr($referenceId, 0, 10), 10, '0', STR_PAD_LEFT);
+                                                    $merchantInfo .= qris_tlv('01', '93600' . $mid);
+                                                    $data .= '26' . str_pad((string) strlen($merchantInfo), 2, '0', STR_PAD_LEFT) . $merchantInfo;
+                                                    
+                                                    $data .= qris_tlv('52', '0000');
+                                                    $data .= qris_tlv('53', '360');
+                                                    
+                                                    if ($amount && $amount > 0) {
+                                                        $data .= qris_tlv('54', number_format($amount, 2, '.', ''));
+                                                    }
+                                                    
+                                                    $data .= qris_tlv('58', 'ID');
+                                                    $data .= qris_tlv('59', substr($merchantName, 0, 25));
+                                                    $data .= qris_tlv('60', 'Yogyakarta');
+                                                    
+                                                    $addData = '';
+                                                    $addData .= qris_tlv('01', $referenceId);
+                                                    $data .= '62' . str_pad((string) strlen($addData), 2, '0', STR_PAD_LEFT) . $addData;
+                                                    
+                                                    $crc = qris_crc16($data . '6304');
+                                                    $data .= qris_tlv('63', $crc);
+                                                    return $data;
+                                                }
+                                            }
+                                            $qrisString = generate_qris_string('Studioku Jogja', $booking->package->price, $booking->booking_code);
+                                        } catch (\Exception $e) {
+                                            $qrisString = $booking->booking_code;
+                                        }
+                                    @endphp
                                     <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-full mb-3">
                                         <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-ping"></span>
                                         <span class="text-[10px] font-bold tracking-wider text-indigo-300 font-mono uppercase">QRIS INSTANT</span>
@@ -165,7 +223,7 @@
                                     <h4 class="text-white text-sm font-bold font-outfit mb-2">Scan QRIS Untuk Bayar</h4>
                                     
                                     <div class="bg-white p-4 rounded-2xl inline-block my-2 shadow-xl">
-                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&color=0f4d43&data={{ $booking->booking_code }}" class="w-40 h-40 object-contain mx-auto" alt="QRIS Code">
+                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&color=0f4d43&data={{ urlencode($qrisString) }}" class="w-40 h-40 object-contain mx-auto" alt="QRIS Code">
                                         <div class="text-[9px] text-emerald-950 font-black mt-2 tracking-widest font-mono">STUDIOKU JOGJA</div>
                                     </div>
                                     
