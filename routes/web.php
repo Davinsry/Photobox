@@ -47,6 +47,11 @@ Route::middleware('guest')->group(function () {
     Route::post('/admin/login', [AuthenticatedSessionController::class, 'store']);
 });
 
+// Redirect /admin to /admin/dashboard
+Route::get('/admin', function () {
+    return redirect()->route('admin.dashboard');
+});
+
 // Redirect /dashboard to /admin/dashboard (for Laravel Breeze auth redirects)
 Route::get('/dashboard', function () {
     return redirect()->route('admin.dashboard');

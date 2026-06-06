@@ -252,7 +252,14 @@ class BookingWizardController extends Controller
     public function sukses(Request $request)
     {
         $code = $request->get('code');
-        $booking = Booking::with(['package', 'payment'])->where('booking_code', $code)->firstOrFail();
+        if (!$code) {
+            return redirect()->route('booking.cek.form')->with('error', 'Silakan masukkan kode booking untuk melihat status pembayaran.');
+        }
+
+        $booking = Booking::with(['package', 'payment'])->where('booking_code', $code)->first();
+        if (!$booking) {
+            return redirect()->route('booking.cek.form')->with('error', 'Kode booking tidak ditemukan.');
+        }
         
         return view('booking.success', compact('booking'));
     }

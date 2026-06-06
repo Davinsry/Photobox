@@ -78,7 +78,7 @@
                         </li>
                     </ul>
                     
-                    <a href="{{ route('booking.step2', ['package_id' => $package->id]) }}" class="block w-full py-4 px-6 rounded-2xl bg-indigo-500/10 text-indigo-400 font-bold text-center group-hover:bg-indigo-500 group-hover:text-white transition-all mt-auto border border-indigo-500/20 group-hover:border-indigo-500">
+                    <a href="{{ route('booking.step1', ['package_id' => $package->id]) }}" class="block w-full py-4 px-6 rounded-2xl bg-indigo-500/10 text-indigo-400 font-bold text-center group-hover:bg-indigo-500 group-hover:text-white transition-all mt-auto border border-indigo-500/20 group-hover:border-indigo-500">
                         Pilih Paket
                     </a>
                 </div>
