@@ -75,6 +75,27 @@
                 </div>
             </div>
 
+            @if($booking->status == 'pending' && $booking->payment && $booking->payment->payment_method !== 'cash')
+                <div class="mb-8 bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-center gap-3">
+                    <div class="flex items-center gap-3 text-left">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 flex-shrink-0 animate-pulse">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-white">Selesaikan Pembayaran Anda</h4>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Silakan selesaikan pembayaran sebelum batas waktu berakhir.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="inline-flex items-center gap-2 px-3.5 py-2 bg-amber-500/20 rounded-xl text-amber-300 font-mono font-black text-xs tracking-wider">
+                            Sisa Waktu: <span id="countdown">05:00</span>
+                        </span>
+                    </div>
+                </div>
+            @endif
+
             <!-- Detail List -->
             <div class="space-y-6 text-sm mb-8">
                 <!-- Rincian Sesi -->
@@ -223,3 +244,37 @@
     </div>
 </div>
 @endsection
+
+@if(isset($booking) && $booking->status == 'pending' && $booking->payment && $booking->payment->payment_method !== 'cash')
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const createdAt = new Date("{{ $booking->created_at->toIso8601String() }}").getTime();
+        const expiryTime = createdAt + (5 * 60 * 1000); // 5 minutes in milliseconds
+
+        function updateTimer() {
+            const now = new Date().getTime();
+            const distance = expiryTime - now;
+
+            if (distance <= 0) {
+                clearInterval(timerInterval);
+                document.getElementById("countdown").innerHTML = "00:00";
+                window.location.reload();
+            } else {
+                const minutes = Math.floor(distance / (60 * 1000));
+                const seconds = Math.floor((distance % (60 * 1000)) / 1000);
+                
+                const displayMinutes = minutes < 10 ? "0" + minutes : minutes;
+                const displaySeconds = seconds < 10 ? "0" + seconds : seconds;
+                
+                document.getElementById("countdown").textContent = displayMinutes + ":" + displaySeconds;
+            }
+        }
+
+        updateTimer();
+        const timerInterval = setInterval(updateTimer, 1000);
+    });
+</script>
+@endsection
+@endif
+

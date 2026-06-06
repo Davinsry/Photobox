@@ -5,13 +5,44 @@
 @section('content')
 <div class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
     <div class="max-w-xl mx-auto text-center">
-        <!-- Success Icon -->
-        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 mb-8 animate-bounce">
-            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-        </div>
-
-        <h1 class="text-4xl font-extrabold font-outfit text-white mb-2">Reservasi Dibuat!</h1>
-        <p class="text-slate-400 text-xs max-w-sm mx-auto mb-8 leading-relaxed">Reservasi Anda telah terdaftar di sistem. Silakan simpan kode booking Anda di bawah.</p>
+        @if($booking->status == 'paid')
+            <!-- Success Icon -->
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 mb-8 animate-bounce animate-duration-1000">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h1 class="text-4xl font-extrabold font-outfit text-white mb-2">Reservasi Berhasil!</h1>
+            <p class="text-slate-400 text-xs max-w-sm mx-auto mb-8 leading-relaxed">Pembayaran Anda telah terkonfirmasi. Reservasi Anda berhasil diselesaikan.</p>
+        @elseif($booking->status == 'cancelled')
+            <!-- Cancelled / Expired Icon -->
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 mb-8">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </div>
+            <h1 class="text-4xl font-extrabold font-outfit text-white mb-2">Waktu Pembayaran Habis</h1>
+            <p class="text-slate-400 text-xs max-w-md mx-auto mb-8 leading-relaxed">Reservasi ini telah dibatalkan karena batas waktu pembayaran (5 menit) telah habis.</p>
+        @elseif($booking->payment && $booking->payment->payment_method == 'cash')
+            <!-- Cash Confirmed Icon -->
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 mb-8 animate-bounce animate-duration-1000">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h1 class="text-4xl font-extrabold font-outfit text-white mb-2">Reservasi Dibuat!</h1>
+            <p class="text-slate-400 text-xs max-w-sm mx-auto mb-8 leading-relaxed">Reservasi Anda telah terdaftar. Silakan lakukan pembayaran di kasir saat kedatangan.</p>
+        @else
+            <!-- Pending Payment Icon -->
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 mb-8">
+                <svg class="w-10 h-10 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <h1 class="text-4xl font-extrabold font-outfit text-white mb-2 font-black">Selesaikan Pembayaran</h1>
+            <p class="text-slate-400 text-xs max-w-md mx-auto mb-4 leading-relaxed">Silakan selesaikan pembayaran Anda dalam waktu 5 menit.</p>
+            <div class="mb-8">
+                <span class="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-amber-300 font-mono font-bold text-xs tracking-wider">
+                    <svg class="w-4 h-4 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Sisa Waktu Pembayaran: <span id="countdown">05:00</span>
+                </span>
+            </div>
+        @endif
 
         <!-- Booking Details Card -->
         <div class="bg-slate-950/40 backdrop-blur-md border border-white/[0.05] rounded-3xl p-8 text-left shadow-2xl shadow-black/35 mb-8">
@@ -154,3 +185,37 @@
     </div>
 </div>
 @endsection
+
+@if($booking->status == 'pending' && $booking->payment && $booking->payment->payment_method !== 'cash')
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const createdAt = new Date("{{ $booking->created_at->toIso8601String() }}").getTime();
+        const expiryTime = createdAt + (5 * 60 * 1000); // 5 minutes in milliseconds
+
+        function updateTimer() {
+            const now = new Date().getTime();
+            const distance = expiryTime - now;
+
+            if (distance <= 0) {
+                clearInterval(timerInterval);
+                document.getElementById("countdown").innerHTML = "00:00";
+                window.location.reload();
+            } else {
+                const minutes = Math.floor(distance / (60 * 1000));
+                const seconds = Math.floor((distance % (60 * 1000)) / 1000);
+                
+                const displayMinutes = minutes < 10 ? "0" + minutes : minutes;
+                const displaySeconds = seconds < 10 ? "0" + seconds : seconds;
+                
+                document.getElementById("countdown").textContent = displayMinutes + ":" + displaySeconds;
+            }
+        }
+
+        updateTimer();
+        const timerInterval = setInterval(updateTimer, 1000);
+    });
+</script>
+@endsection
+@endif
+

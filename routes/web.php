@@ -53,6 +53,15 @@ Route::get('/payment/api-check/{code}', function($code) {
     if (!$booking) {
         return response()->json(['success' => false, 'message' => 'Reservasi tidak ditemukan'], 404);
     }
+    
+    // Auto-expire bookings older than 5 minutes
+    if ($booking->status === 'pending' && $booking->payment && $booking->payment->payment_method !== 'cash') {
+        if ($booking->created_at->addMinutes(5)->isPast()) {
+            $booking->update(['status' => 'cancelled']);
+            $booking->payment->update(['status' => 'expired']);
+        }
+    }
+    
     return response()->json([
         'success' => true,
         'booking_code' => $booking->booking_code,

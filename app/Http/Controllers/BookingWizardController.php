@@ -277,11 +277,10 @@ class BookingWizardController extends Controller
         // Redirect with message
         if ($request->payment_method === 'cash') {
             return redirect()->route('booking.sukses', ['code' => $booking->booking_code])
-                ->with('success', 'Reservasi berhasil dibuat! Metode pembayaran Anda adalah Bayar di Tempat (Cash).');
+                ->with('success', 'Reservasi berhasil dibuat! Silakan lakukan pembayaran di kasir saat kedatangan.');
         }
 
-        return redirect()->route('booking.sukses', ['code' => $booking->booking_code])
-            ->with('success', 'Reservasi berhasil dibuat! Silakan lanjutkan ke simulasi pembayaran.');
+        return redirect()->route('booking.sukses', ['code' => $booking->booking_code]);
     }
 
     // Halaman sukses + detail booking
@@ -295,6 +294,14 @@ class BookingWizardController extends Controller
         $booking = Booking::with(['package', 'payment'])->where('booking_code', $code)->first();
         if (!$booking) {
             return redirect()->route('booking.cek.form')->with('error', 'Kode booking tidak ditemukan.');
+        }
+        
+        // Auto-expire bookings older than 5 minutes
+        if ($booking->status === 'pending' && $booking->payment && $booking->payment->payment_method !== 'cash') {
+            if ($booking->created_at->addMinutes(5)->isPast()) {
+                $booking->update(['status' => 'cancelled']);
+                $booking->payment->update(['status' => 'expired']);
+            }
         }
         
         return view('booking.success', compact('booking'));
@@ -321,6 +328,14 @@ class BookingWizardController extends Controller
 
         if (!$booking) {
             return back()->withInput()->withErrors(['booking_code' => 'Data booking tidak ditemukan. Silakan periksa kembali kode booking dan email Anda.']);
+        }
+
+        // Auto-expire bookings older than 5 minutes
+        if ($booking->status === 'pending' && $booking->payment && $booking->payment->payment_method !== 'cash') {
+            if ($booking->created_at->addMinutes(5)->isPast()) {
+                $booking->update(['status' => 'cancelled']);
+                $booking->payment->update(['status' => 'expired']);
+            }
         }
 
         return view('booking.status', compact('booking'));
