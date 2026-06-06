@@ -47,9 +47,13 @@ Route::middleware('guest')->group(function () {
     Route::post('/admin/login', [AuthenticatedSessionController::class, 'store']);
 });
 
+// Redirect /dashboard to /admin/dashboard (for Laravel Breeze auth redirects)
+Route::get('/dashboard', function () {
+    return redirect()->route('admin.dashboard');
+})->middleware(['auth'])->name('dashboard');
+
 // Admin Panel Routes
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    // Redefine standard /admin/dashboard to named 'dashboard' for Breeze login redirect
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
     
     // CRUD Paket Layanan
