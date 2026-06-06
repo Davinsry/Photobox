@@ -187,8 +187,13 @@
                                         </div>
                                         <div class="flex justify-between items-center">
                                             <span class="text-slate-400 font-medium">Nomor Rekening</span>
-                                            <div class="flex items-center gap-1.5">
+                                            <div class="flex items-center gap-2">
                                                 <span class="text-indigo-400 font-black font-mono tracking-wider text-sm">{{ $booking->booking_code }}</span>
+                                                <button onclick="navigator.clipboard.writeText('{{ $booking->booking_code }}'); const btn = this; const origSvg = btn.innerHTML; btn.innerHTML = '<span class=\'text-[10px] text-emerald-400 font-bold px-1\'>Tersalin!</span>'; setTimeout(() => btn.innerHTML = origSvg, 2000);" class="p-1 text-slate-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 rounded-md border border-white/5 flex items-center justify-center gap-1" title="Salin Nomor Rekening">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-3 8h4m-4 4h4m-11-4h.01M3 16h.01"></path>
+                                                    </svg>
+                                                </button>
                                             </div>
                                         </div>
                                         <div class="flex justify-between">
