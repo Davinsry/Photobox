@@ -12,8 +12,15 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Inter', ...defaultTheme.fontFamily.sans],
+                outfit: ['Outfit', ...defaultTheme.fontFamily.sans],
             },
+            colors: {
+                slate: {
+                    850: '#1e293b',
+                    955: '#090d16',
+                }
+            }
         },
     },
 

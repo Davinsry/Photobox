@@ -3,7 +3,7 @@
 @section('title', 'Pemesanan Berhasil')
 
 @section('content')
-<div class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
     <div class="max-w-xl mx-auto text-center">
         <!-- Success Icon -->
         <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 mb-8 animate-bounce">
@@ -11,20 +11,20 @@
         </div>
 
         <h1 class="text-4xl font-extrabold font-outfit text-white mb-2">Reservasi Dibuat!</h1>
-        <p class="text-slate-400 text-sm max-w-sm mx-auto mb-8">Reservasi Anda telah terdaftar di sistem. Silakan simpan kode booking Anda.</p>
+        <p class="text-slate-400 text-xs max-w-sm mx-auto mb-8 leading-relaxed">Reservasi Anda telah terdaftar di sistem. Silakan simpan kode booking Anda di bawah.</p>
 
         <!-- Booking Details Card -->
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 text-left shadow-xl mb-8">
-            <div class="border-b border-slate-850 pb-4 mb-4 flex justify-between items-center">
+        <div class="bg-slate-950/40 backdrop-blur-md border border-white/[0.05] rounded-3xl p-8 text-left shadow-2xl shadow-black/35 mb-8">
+            <div class="border-b border-white/[0.05] pb-5 mb-5 flex justify-between items-center">
                 <div>
-                    <span class="text-slate-500 text-xs block font-mono">KODE BOOKING</span>
-                    <span class="text-2xl font-black text-white uppercase tracking-wider">{{ $booking->booking_code }}</span>
+                    <span class="text-slate-500 text-[9px] font-black uppercase tracking-widest font-mono">KODE BOOKING</span>
+                    <span class="text-2xl font-black text-white uppercase tracking-wider block mt-0.5">{{ $booking->booking_code }}</span>
                 </div>
                 <div>
                     @if($booking->status == 'paid')
-                        <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Sudah Dibayar</span>
+                        <span class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Sudah Dibayar</span>
                     @else
-                        <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse">Menunggu Pembayaran</span>
+                        <span class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse">Menunggu Pembayaran</span>
                     @endif
                 </div>
             </div>
@@ -40,7 +40,7 @@
                     <span class="text-white font-semibold">{{ $booking->guest_email }}</span>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-slate-500">Paket</span>
+                    <span class="text-slate-500">Paket Layanan</span>
                     <span class="text-white font-semibold">{{ $booking->package->name }} ({{ $booking->package->duration_minutes }} Menit)</span>
                 </div>
                 <div class="flex justify-between">
@@ -51,25 +51,25 @@
                     <span class="text-slate-500">Jam Sesi</span>
                     <span class="text-white font-semibold">{{ $booking->start_time }} - {{ $booking->end_time }} WIB</span>
                 </div>
-                <div class="flex justify-between border-t border-slate-850 pt-4 mt-4">
+                <div class="flex justify-between border-t border-white/[0.05] pt-5 mt-5">
                     <span class="text-slate-400 font-bold text-sm">Total Tagihan</span>
-                    <span class="text-indigo-400 font-extrabold text-sm">Rp {{ number_format($booking->package->price, 0, ',', '.') }}</span>
+                    <span class="text-indigo-400 font-black text-base">Rp {{ number_format($booking->package->price, 0, ',', '.') }}</span>
                 </div>
             </div>
 
             <!-- Developer Simulation Box -->
             @if($booking->status == 'pending')
-            <div class="mt-6 border-t border-slate-850 pt-6">
-                <div class="bg-indigo-500/5 rounded-2xl p-4 border border-indigo-500/15 text-center">
-                    <h4 class="text-indigo-300 text-xs font-bold mb-2">Simulasi Pembayaran (Local Dev)</h4>
-                    <p class="text-slate-400 text-xxs mb-4 leading-normal">Untuk mempermudah pengujian alur kerja tanpa perlu integrasi payment gateway live, silakan klik tombol di bawah ini:</p>
+            <div class="mt-6 border-t border-white/[0.05] pt-6">
+                <div class="bg-indigo-500/5 rounded-2xl p-5 border border-indigo-500/15 text-center">
+                    <h4 class="text-indigo-300 text-xs font-bold mb-1.5 font-outfit">Simulasi Pembayaran (Local Dev)</h4>
+                    <p class="text-slate-400 text-[10px] mb-4 leading-normal">Untuk mempermudah pengujian alur kerja tanpa perlu integrasi payment gateway live, silakan gunakan tombol simulasi berikut:</p>
                     
-                    <form action="{{ route('payment.simulate', $booking->booking_code) }}" method="POST" class="inline-flex space-x-2">
+                    <form action="{{ route('payment.simulate', $booking->booking_code) }}" method="POST" class="flex flex-col sm:flex-row justify-center gap-3">
                         @csrf
-                        <button type="submit" name="simulate_status" value="paid" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl transition-all">
+                        <button type="submit" name="simulate_status" value="paid" class="w-full px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-emerald-500/15 hover:scale-[1.02]">
                             Bayar Sekarang (Simulasi)
                         </button>
-                        <button type="submit" name="simulate_status" value="cancelled" class="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-xl transition-all">
+                        <button type="submit" name="simulate_status" value="cancelled" class="w-full px-4 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-bold rounded-xl border border-rose-500/20 transition-all hover:scale-[1.02]">
                             Batalkan
                         </button>
                     </form>
@@ -78,11 +78,11 @@
             @endif
         </div>
 
-        <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 justify-center">
-            <a href="{{ route('home') }}" class="px-6 py-3.5 bg-slate-900 border border-slate-800 text-slate-300 font-semibold rounded-2xl text-sm hover:bg-slate-800 transition-all">
+        <div class="flex flex-col sm:flex-row gap-4 justify-center max-w-sm mx-auto">
+            <a href="{{ route('home') }}" class="w-full px-6 py-3.5 bg-white/5 border border-white/5 text-slate-300 font-bold rounded-2xl text-xs hover:bg-white/10 hover:text-white transition-all text-center">
                 Kembali ke Beranda
             </a>
-            <a href="{{ route('booking.cek.form') }}?booking_code={{ $booking->booking_code }}&guest_email={{ $booking->guest_email }}" class="px-6 py-3.5 bg-indigo-500 text-white font-semibold rounded-2xl text-sm hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-500/10">
+            <a href="{{ route('booking.cek.form') }}?booking_code={{ $booking->booking_code }}&guest_email={{ $booking->guest_email }}" class="w-full px-6 py-3.5 bg-indigo-500 text-white font-bold rounded-2xl text-xs hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-500/25 text-center hover:scale-[1.02]">
                 Lihat Detail Status
             </a>
         </div>
