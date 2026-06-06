@@ -33,8 +33,8 @@ Route::get('/book/{package_id}', function ($package_id) {
 // Multi-step Booking Wizard
 Route::prefix('booking')->name('booking.')->group(function () {
     Route::get('/', [BookingWizardController::class, 'step1'])->name('step1'); // Pilih Paket
-    Route::get('/jadwal', [BookingWizardController::class, 'step2'])->name('step2'); // Pilih Tanggal & Waktu
-    Route::get('/data-diri', [BookingWizardController::class, 'step3'])->name('step3'); // Isi Data Diri
+    Route::match(['get', 'post'], '/jadwal', [BookingWizardController::class, 'step2'])->name('step2'); // Pilih Tanggal & Waktu
+    Route::match(['get', 'post'], '/data-diri', [BookingWizardController::class, 'step3'])->name('step3'); // Isi Data Diri
     Route::get('/konfirmasi', [BookingWizardController::class, 'step4'])->name('step4'); // Ringkasan & Konfirmasi
     Route::post('/', [BookingWizardController::class, 'store'])->name('store'); // Simpan booking
     Route::get('/sukses', [BookingWizardController::class, 'sukses'])->name('sukses'); // Halaman sukses

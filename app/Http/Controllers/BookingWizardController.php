@@ -42,11 +42,20 @@ class BookingWizardController extends Controller
         $package = Package::findOrFail($sessionData['package_id']);
         
         // Default to today or selected date
-        $selectedDate = $request->get('date', Carbon::today()->toDateString());
-        
-        // If selected date is in the past, default to today
-        if (Carbon::parse($selectedDate)->isPast() && !Carbon::parse($selectedDate)->isToday()) {
+        $selectedDate = $request->get('date');
+        if (!$selectedDate || strtotime($selectedDate) === false) {
             $selectedDate = Carbon::today()->toDateString();
+        } else {
+            try {
+                $parsedDate = Carbon::parse($selectedDate);
+                if ($parsedDate->isPast() && !$parsedDate->isToday()) {
+                    $selectedDate = Carbon::today()->toDateString();
+                } else {
+                    $selectedDate = $parsedDate->toDateString();
+                }
+            } catch (\Exception $e) {
+                $selectedDate = Carbon::today()->toDateString();
+            }
         }
 
         // Generate Time Slots based on studio hours and package duration
@@ -58,10 +67,26 @@ class BookingWizardController extends Controller
         $openingTime = $settings['opening_time'] ?? '09:00';
         $closingTime = $settings['closing_time'] ?? '21:00';
         
+        if (!preg_match('/^\d{2}:\d{2}$/', $openingTime)) {
+            $openingTime = '09:00';
+        }
+        if (!preg_match('/^\d{2}:\d{2}$/', $closingTime)) {
+            $closingTime = '21:00';
+        }
+        
         $slots = [];
-        $duration = $package->duration_minutes;
-        $start = Carbon::parse($selectedDate . ' ' . $openingTime);
-        $end = Carbon::parse($selectedDate . ' ' . $closingTime);
+        $duration = $package->duration_minutes ?: 30;
+        if ($duration <= 0) {
+            $duration = 30;
+        }
+
+        try {
+            $start = Carbon::parse($selectedDate . ' ' . $openingTime);
+            $end = Carbon::parse($selectedDate . ' ' . $closingTime);
+        } catch (\Exception $e) {
+            $start = Carbon::parse($selectedDate . ' 09:00');
+            $end = Carbon::parse($selectedDate . ' 21:00');
+        }
 
         // Fetch bookings and blocks for the selected date
         $bookings = Booking::where('booking_date', $selectedDate)
