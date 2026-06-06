@@ -26,7 +26,7 @@ class BookingConfirmationMail extends Mailable
     /**
      * Get the message envelope.
      */
-    public function __envelope(): Envelope
+    public function envelope(): Envelope
     {
         return new Envelope(
             subject: 'Konfirmasi Booking Reservasi #' . $this->booking->booking_code,
@@ -36,7 +36,7 @@ class BookingConfirmationMail extends Mailable
     /**
      * Get the message content definition.
      */
-    public function __content(): Content
+    public function content(): Content
     {
         return new Content(
             view: 'emails.booking-confirmation',
