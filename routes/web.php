@@ -22,6 +22,14 @@ Route::get('/layanan', [HomeController::class, 'layanan'])->name('layanan');
 Route::get('/galeri', [HomeController::class, 'galeri'])->name('galeri');
 Route::get('/testimoni', [HomeController::class, 'testimoni'])->name('testimoni');
 
+// Shortcut /book and /book/{package_id} routes
+Route::get('/book', function () {
+    return redirect()->route('booking.step1');
+});
+Route::get('/book/{package_id}', function ($package_id) {
+    return redirect()->route('booking.step1', ['package_id' => $package_id]);
+});
+
 // Multi-step Booking Wizard
 Route::prefix('booking')->name('booking.')->group(function () {
     Route::get('/', [BookingWizardController::class, 'step1'])->name('step1'); // Pilih Paket
