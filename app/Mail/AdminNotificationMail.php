@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Mail;
+
+use App\Models\Booking;
+use Illuminate\Bus\Queueable;
+use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Content;
+use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Queue\SerializesModels;
+
+class AdminNotificationMail extends Mailable
+{
+    use Queueable, SerializesModels;
+
+    public $booking;
+
+    /**
+     * Create a new message instance.
+     */
+    public function __construct(Booking $booking)
+    {
+        $this->booking = $booking;
+    }
+
+    /**
+     * Get the message envelope.
+     */
+    public function __envelope(): Envelope
+    {
+        return new Envelope(
+            subject: '[NEW BOOKING] Reservasi Baru #' . $this->booking->booking_code,
+        );
+    }
+
+    /**
+     * Get the message content definition.
+     */
+    public function __content(): Content
+    {
+        return new Content(
+            view: 'emails.admin-notification',
+        );
+    }
+}

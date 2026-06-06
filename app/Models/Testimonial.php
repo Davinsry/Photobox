@@ -8,8 +8,8 @@ class Testimonial extends Model
 {
     protected $fillable = [
         'customer_name',
-        'review',
+        'content',
         'rating',
-        'is_active',
+        'is_visible',
     ];
 }

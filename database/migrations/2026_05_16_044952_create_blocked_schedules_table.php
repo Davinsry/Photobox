@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('schedule_blocks', function (Blueprint $table) {
+        Schema::create('blocked_schedules', function (Blueprint $table) {
             $table->id();
-            $table->date('block_date');
-            $table->time('start_time')->nullable(); // If null, means whole day
+            $table->date('blocked_date');
+            $table->time('start_time')->nullable();
             $table->time('end_time')->nullable();
             $table->string('reason')->nullable();
             $table->timestamps();
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('schedule_blocks');
+        Schema::dropIfExists('blocked_schedules');
     }
 };

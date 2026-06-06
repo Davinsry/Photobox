@@ -9,17 +9,23 @@ class Booking extends Model
     protected $fillable = [
         'booking_code',
         'package_id',
-        'customer_name',
-        'customer_email',
-        'customer_phone',
+        'guest_name',
+        'guest_email',
+        'guest_phone',
         'booking_date',
-        'booking_time',
+        'start_time',
+        'end_time',
         'status',
-        'total_amount',
+        'notes',
     ];
 
     public function package()
     {
         return $this->belongsTo(Package::class);
+    }
+
+    public function payment()
+    {
+        return $this->hasOne(Payment::class);
     }
 }

@@ -11,6 +11,7 @@ class Package extends Model
         'description',
         'price',
         'duration_minutes',
+        'thumbnail',
         'is_active',
     ];
 }

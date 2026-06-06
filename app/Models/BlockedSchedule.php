@@ -4,10 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ScheduleBlock extends Model
+class BlockedSchedule extends Model
 {
     protected $fillable = [
-        'block_date',
+        'blocked_date',
         'start_time',
         'end_time',
         'reason',

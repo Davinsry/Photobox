@@ -15,13 +15,14 @@ return new class extends Migration
             $table->id();
             $table->string('booking_code')->unique();
             $table->foreignId('package_id')->constrained('packages')->onDelete('cascade');
-            $table->string('customer_name');
-            $table->string('customer_email');
-            $table->string('customer_phone');
+            $table->string('guest_name');
+            $table->string('guest_email');
+            $table->string('guest_phone');
             $table->date('booking_date');
-            $table->time('booking_time');
+            $table->time('start_time');
+            $table->time('end_time');
             $table->enum('status', ['pending', 'paid', 'completed', 'cancelled'])->default('pending');
-            $table->decimal('total_amount', 12, 2);
+            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }
