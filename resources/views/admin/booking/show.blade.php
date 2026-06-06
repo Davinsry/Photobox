@@ -81,6 +81,8 @@
                                 <span class="text-emerald-400 font-bold">LUNAS</span>
                             @elseif($booking->payment->status == 'cancelled')
                                 <span class="text-rose-400 font-bold">BATAL</span>
+                            @elseif($booking->payment->status == 'bayar_di_tempat')
+                                <span class="text-indigo-400 font-bold">BAYAR DI TEMPAT</span>
                             @else
                                 <span class="text-amber-500 font-bold">PENDING</span>
                             @endif

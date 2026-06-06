@@ -90,6 +90,8 @@
                                 <span class="px-2.5 py-0.5 rounded-full text-xxs font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">Completed</span>
                             @elseif($booking->status == 'cancelled')
                                 <span class="px-2.5 py-0.5 rounded-full text-xxs font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">Cancelled</span>
+                            @elseif($booking->payment && $booking->payment->payment_method == 'cash')
+                                <span class="px-2.5 py-0.5 rounded-full text-xxs font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">Bayar di Tempat</span>
                             @else
                                 <span class="px-2.5 py-0.5 rounded-full text-xxs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse">Pending</span>
                             @endif

@@ -48,6 +48,22 @@ Route::prefix('booking')->name('booking.')->group(function () {
 Route::get('/payment/callback', [PaymentController::class, 'callback'])->name('payment.callback');
 Route::post('/payment/notification', [PaymentController::class, 'notification'])->name('payment.notification');
 Route::post('/payment/simulate/{code}', [PaymentController::class, 'simulatePayment'])->name('payment.simulate');
+Route::get('/payment/api-check/{code}', function($code) {
+    $booking = \App\Models\Booking::with(['package', 'payment'])->where('booking_code', $code)->first();
+    if (!$booking) {
+        return response()->json(['success' => false, 'message' => 'Reservasi tidak ditemukan'], 404);
+    }
+    return response()->json([
+        'success' => true,
+        'booking_code' => $booking->booking_code,
+        'guest_name' => $booking->guest_name,
+        'package_name' => $booking->package->name,
+        'amount' => (float)$booking->package->price,
+        'status' => $booking->status,
+        'payment_method' => $booking->payment->payment_method ?? 'transfer',
+        'payment_status' => $booking->payment->status ?? 'pending',
+    ]);
+})->name('payment.api-check');
 
 // Admin Login Alias (as specified in PRD)
 Route::middleware('guest')->group(function () {

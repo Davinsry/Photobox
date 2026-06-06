@@ -77,9 +77,10 @@ class PaymentController extends Controller
             $booking->update(['status' => 'paid']);
             
             if ($booking->payment) {
+                $paymentMethod = $booking->payment->payment_method ? strtoupper($booking->payment->payment_method) : 'QRIS';
                 $booking->payment->update([
                     'status' => 'paid',
-                    'payment_method' => 'QRIS (Simulated)',
+                    'payment_method' => $paymentMethod . ' (Simulated)',
                     'transaction_id' => 'SIM-TX-' . strtoupper(str_replace('.', '', uniqid('', true))),
                     'paid_at' => Carbon::now(),
                 ]);

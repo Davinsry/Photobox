@@ -133,18 +133,71 @@
                     </div>
 
                     @if($booking->status == 'pending' && $booking->payment && $booking->payment->payment_method !== 'cash')
-                        <div class="bg-indigo-500/5 border border-indigo-500/20 rounded-xl p-4 text-center mt-4">
-                            <p class="text-indigo-300 text-[10px] leading-relaxed mb-3.5">Ini adalah lingkungan pengembangan lokal. Anda dapat mensimulasikan pembayaran untuk mengubah status reservasi ini secara instan.</p>
-                            
-                            <form action="{{ route('payment.simulate', $booking->booking_code) }}" method="POST" class="flex flex-col sm:flex-row gap-3.5 justify-center">
-                                @csrf
-                                <button type="submit" name="simulate_status" value="paid" class="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-emerald-500/15">
-                                    Simulasikan Sukses (Bayar)
-                                </button>
-                                <button type="submit" name="simulate_status" value="cancelled" class="px-4 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold text-xs rounded-xl border border-rose-500/20 transition-all">
-                                    Simulasikan Batal
-                                </button>
-                            </form>
+                        <div class="mt-4 space-y-4">
+                            @if($booking->payment->payment_method === 'qris')
+                                <!-- QRIS CARD -->
+                                <div class="bg-white/5 rounded-2xl p-5 border border-white/10 text-center">
+                                    <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-full mb-3">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-ping"></span>
+                                        <span class="text-[10px] font-bold tracking-wider text-indigo-300 font-mono uppercase">QRIS INSTANT</span>
+                                    </div>
+                                    <h4 class="text-white text-sm font-bold font-outfit mb-2">Scan QRIS Untuk Bayar</h4>
+                                    
+                                    <div class="bg-white p-4 rounded-2xl inline-block my-2 shadow-xl">
+                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&color=0f4d43&data={{ $booking->booking_code }}" class="w-40 h-40 object-contain mx-auto" alt="QRIS Code">
+                                        <div class="text-[9px] text-emerald-950 font-black mt-2 tracking-widest font-mono">STUDIOKU JOGJA</div>
+                                    </div>
+                                    
+                                    <p class="text-slate-400 text-[10px] max-w-xs mx-auto mt-2 leading-relaxed">Scan QR Code di atas menggunakan aplikasi e-wallet (GoPay, OVO, Dana) or Mobile Banking Anda.</p>
+                                </div>
+                            @elseif($booking->payment->payment_method === 'transfer')
+                                <!-- TRANSFER CARD -->
+                                <div class="bg-white/5 rounded-2xl p-5 border border-white/10 text-left">
+                                    <div class="flex justify-between items-center mb-4">
+                                        <span class="px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-[10px] font-bold tracking-wider text-indigo-300 font-mono">TRANSFER BANK</span>
+                                        <span class="text-xs font-bold text-white uppercase tracking-wider font-mono">MOCKBANK</span>
+                                    </div>
+                                    <h4 class="text-white text-sm font-bold font-outfit mb-3">Informasi Rekening Pembayaran</h4>
+                                    
+                                    <div class="space-y-2 text-xs bg-slate-950/40 p-4 rounded-xl border border-white/5">
+                                        <div class="flex justify-between">
+                                            <span class="text-slate-400">Nama Bank</span>
+                                            <span class="text-white font-bold">MockBank</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-slate-400 font-medium">Nomor Rekening</span>
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="text-indigo-400 font-black font-mono tracking-wider text-sm">{{ $booking->booking_code }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-slate-400">Atas Nama</span>
+                                            <span class="text-white font-semibold">Studioku Jogja</span>
+                                        </div>
+                                        <div class="flex justify-between border-t border-white/5 pt-2 mt-2">
+                                            <span class="text-slate-400">Jumlah Transfer</span>
+                                            <span class="text-white font-extrabold">Rp {{ number_format($booking->package->price, 0, ',', '.') }}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <p class="text-slate-400 text-[10px] mt-3 leading-relaxed text-center">Silakan buka aplikasi <strong>MockBank</strong>, masuk ke menu <strong>Bayar &gt; Studioku</strong>, masukkan nomor rekening pembayaran (Kode Booking) di atas, lalu selesaikan transaksi.</p>
+                                </div>
+                            @endif
+
+                            <!-- Developer Simulation Options -->
+                            <div class="bg-indigo-500/5 border border-indigo-500/20 rounded-xl p-4 text-center mt-4">
+                                <p class="text-indigo-300 text-[10px] leading-relaxed mb-3.5">Ini adalah lingkungan pengembangan lokal. Anda dapat mensimulasikan pembayaran untuk mengubah status reservasi ini secara instan.</p>
+                                
+                                <form action="{{ route('payment.simulate', $booking->booking_code) }}" method="POST" class="flex flex-col sm:flex-row gap-3.5 justify-center">
+                                    @csrf
+                                    <button type="submit" name="simulate_status" value="paid" class="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-emerald-500/15">
+                                        Simulasikan Sukses (Bayar)
+                                    </button>
+                                    <button type="submit" name="simulate_status" value="cancelled" class="px-4 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold text-xs rounded-xl border border-rose-500/20 transition-all">
+                                        Simulasikan Batal
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     @elseif($booking->status == 'pending' && $booking->payment && $booking->payment->payment_method === 'cash')
                         <div class="bg-indigo-500/5 border border-indigo-500/20 rounded-xl p-4 text-center mt-4">

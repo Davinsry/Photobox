@@ -21,7 +21,11 @@
         </div>
         <div class="content">
             <p>Halo {{ $booking->guest_name }},</p>
-            <p>Terima kasih telah melakukan pemesanan di Studioku Jogja. Reservasi Anda saat ini berstatus <strong>Menunggu Pembayaran</strong>.</p>
+            @if($booking->payment && $booking->payment->payment_method === 'cash')
+                <p>Terima kasih telah melakukan pemesanan di Studioku Jogja. Reservasi Anda berhasil dibuat dengan metode pembayaran <strong>Bayar di Tempat (Cash)</strong>.</p>
+            @else
+                <p>Terima kasih telah melakukan pemesanan di Studioku Jogja. Reservasi Anda saat ini berstatus <strong>Menunggu Pembayaran</strong>.</p>
+            @endif
             
             <h3>Detail Reservasi:</h3>
             <table class="details" style="width: 100%;">
@@ -41,13 +45,23 @@
                     <th>Jam Sesi</th>
                     <td>{{ $booking->start_time }} - {{ $booking->end_time }} WIB</td>
                 </tr>
+                @if($booking->payment)
+                <tr>
+                    <th>Metode Pembayaran</th>
+                    <td style="text-transform: uppercase;">{{ $booking->payment->payment_method }}</td>
+                </tr>
+                @endif
                 <tr>
                     <th>Total Biaya</th>
                     <td style="color: #6366f1; font-weight: bold;">Rp {{ number_format($booking->package->price, 0, ',', '.') }}</td>
                 </tr>
             </table>
 
-            <p>Silakan lakukan pembayaran agar jadwal sesi Anda tidak dibatalkan otomatis oleh sistem.</p>
+            @if($booking->payment && $booking->payment->payment_method === 'cash')
+                <p>Silakan lakukan pembayaran tunai atau QRIS secara langsung kepada kasir kami ketika Anda datang ke studio untuk sesi foto.</p>
+            @else
+                <p>Silakan lakukan pembayaran agar jadwal sesi Anda tidak dibatalkan otomatis oleh sistem.</p>
+            @endif
         </div>
         <div class="footer">
             <p>&copy; {{ date('Y') }} Studioku Jogja. All rights reserved.</p>

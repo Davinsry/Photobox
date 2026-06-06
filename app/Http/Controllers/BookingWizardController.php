@@ -260,7 +260,7 @@ class BookingWizardController extends Controller
         $booking->payment()->create([
             'amount' => $package->price,
             'payment_method' => $request->payment_method,
-            'status' => 'pending',
+            'status' => $request->payment_method === 'cash' ? 'bayar_di_tempat' : 'pending',
         ]);
 
         // Send confirmation emails
