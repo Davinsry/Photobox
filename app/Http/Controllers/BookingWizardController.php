@@ -234,6 +234,11 @@ class BookingWizardController extends Controller
             return redirect()->route('booking.step2')->withErrors(['slot' => 'Maaf, slot waktu ini baru saja dipesan oleh orang lain. Silakan pilih slot lain.']);
         }
 
+        // Validate payment method
+        $request->validate([
+            'payment_method' => 'required|string|in:qris,transfer,cash',
+        ]);
+
         // Generate Unique Booking Code
         $bookingCode = 'SB-' . strtoupper(Str::random(6));
 
@@ -254,6 +259,7 @@ class BookingWizardController extends Controller
         // Create initial Payment transaction
         $booking->payment()->create([
             'amount' => $package->price,
+            'payment_method' => $request->payment_method,
             'status' => 'pending',
         ]);
 
@@ -268,9 +274,14 @@ class BookingWizardController extends Controller
         // Clear wizard session
         session()->forget('booking_wizard');
 
-        // Trigger Midtrans or payment simulation redirect
-        // For development, redirect to success page and allow manual payment simulation there
-        return redirect()->route('booking.sukses', ['code' => $booking->booking_code]);
+        // Redirect with message
+        if ($request->payment_method === 'cash') {
+            return redirect()->route('booking.sukses', ['code' => $booking->booking_code])
+                ->with('success', 'Reservasi berhasil dibuat! Metode pembayaran Anda adalah Bayar di Tempat (Cash).');
+        }
+
+        return redirect()->route('booking.sukses', ['code' => $booking->booking_code])
+            ->with('success', 'Reservasi berhasil dibuat! Silakan lanjutkan ke simulasi pembayaran.');
     }
 
     // Halaman sukses + detail booking

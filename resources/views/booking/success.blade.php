@@ -23,6 +23,8 @@
                 <div>
                     @if($booking->status == 'paid')
                         <span class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Sudah Dibayar</span>
+                    @elseif($booking->payment && $booking->payment->payment_method == 'cash')
+                        <span class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">Bayar di Tempat</span>
                     @else
                         <span class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse">Menunggu Pembayaran</span>
                     @endif
@@ -51,6 +53,10 @@
                     <span class="text-slate-500">Jam Sesi</span>
                     <span class="text-white font-semibold">{{ $booking->start_time }} - {{ $booking->end_time }} WIB</span>
                 </div>
+                <div class="flex justify-between border-t border-white/[0.05] pt-3">
+                    <span class="text-slate-500">Metode Pembayaran</span>
+                    <span class="text-white font-semibold uppercase font-mono">{{ $booking->payment->payment_method ?? 'QRIS' }}</span>
+                </div>
                 <div class="flex justify-between border-t border-white/[0.05] pt-5 mt-5">
                     <span class="text-slate-400 font-bold text-sm">Total Tagihan</span>
                     <span class="text-indigo-400 font-black text-base">Rp {{ number_format($booking->package->price, 0, ',', '.') }}</span>
@@ -58,10 +64,10 @@
             </div>
 
             <!-- Developer Simulation Box -->
-            @if($booking->status == 'pending')
+            @if($booking->status == 'pending' && $booking->payment && $booking->payment->payment_method !== 'cash')
             <div class="mt-6 border-t border-white/[0.05] pt-6">
                 <div class="bg-indigo-500/5 rounded-2xl p-5 border border-indigo-500/15 text-center">
-                    <h4 class="text-indigo-300 text-xs font-bold mb-1.5 font-outfit">Simulasi Pembayaran (Local Dev)</h4>
+                    <h4 class="text-indigo-300 text-xs font-bold mb-1.5 font-outfit">Simulasi Pembayaran (Local Dev) - {{ strtoupper($booking->payment->payment_method) }}</h4>
                     <p class="text-slate-400 text-[10px] mb-4 leading-normal">Untuk mempermudah pengujian alur kerja tanpa perlu integrasi payment gateway live, silakan gunakan tombol simulasi berikut:</p>
                     
                     <form action="{{ route('payment.simulate', $booking->booking_code) }}" method="POST" class="flex flex-col sm:flex-row justify-center gap-3">
@@ -73,6 +79,14 @@
                             Batalkan
                         </button>
                     </form>
+                </div>
+            </div>
+            @elseif($booking->payment && $booking->payment->payment_method === 'cash')
+            <div class="mt-6 border-t border-white/[0.05] pt-6">
+                <div class="bg-indigo-500/5 rounded-2xl p-5 border border-indigo-500/15 text-center">
+                    <h4 class="text-indigo-300 text-xs font-bold mb-1.5 font-outfit">Instruksi Pembayaran Cash</h4>
+                    <p class="text-slate-300 text-[10px] leading-normal mb-1">Metode pembayaran Anda adalah <strong>Bayar di Tempat (Cash)</strong>.</p>
+                    <p class="text-slate-400 text-[10px] leading-normal">Silakan melakukan pembayaran tunai atau QRIS langsung kepada kasir kami ketika Anda datang ke studio untuk sesi foto sesuai dengan jadwal yang telah Anda pilih.</p>
                 </div>
             </div>
             @endif

@@ -67,6 +67,8 @@
                         <span class="px-4 py-1.5 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">Selesai Sesi</span>
                     @elseif($booking->status == 'cancelled')
                         <span class="px-4 py-1.5 rounded-full text-xs font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">Dibatalkan</span>
+                    @elseif($booking->payment && $booking->payment->payment_method == 'cash')
+                        <span class="px-4 py-1.5 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">Bayar di Tempat</span>
                     @else
                         <span class="px-4 py-1.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse">Menunggu Pembayaran</span>
                     @endif
@@ -121,12 +123,16 @@
                 <!-- Rincian Pembayaran -->
                 <div class="bg-slate-900/40 rounded-2xl p-5 border border-white/[0.05] shadow-inner">
                     <h4 class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-3 font-mono">Transaksi Pembayaran</h4>
-                    <div class="flex justify-between items-center mb-4 text-xs">
+                    <div class="flex justify-between items-center mb-2 text-xs">
+                        <span class="text-slate-500">Metode Pembayaran</span>
+                        <span class="text-white font-semibold uppercase font-mono">{{ $booking->payment->payment_method ?? 'QRIS' }}</span>
+                    </div>
+                    <div class="flex justify-between items-center mb-4 text-xs border-t border-white/5 pt-2">
                         <span class="text-slate-500">Total Harga</span>
                         <span class="text-lg font-black text-white">Rp {{ number_format($booking->package->price, 0, ',', '.') }}</span>
                     </div>
 
-                    @if($booking->status == 'pending')
+                    @if($booking->status == 'pending' && $booking->payment && $booking->payment->payment_method !== 'cash')
                         <div class="bg-indigo-500/5 border border-indigo-500/20 rounded-xl p-4 text-center mt-4">
                             <p class="text-indigo-300 text-[10px] leading-relaxed mb-3.5">Ini adalah lingkungan pengembangan lokal. Anda dapat mensimulasikan pembayaran untuk mengubah status reservasi ini secara instan.</p>
                             
@@ -139,6 +145,10 @@
                                     Simulasikan Batal
                                 </button>
                             </form>
+                        </div>
+                    @elseif($booking->status == 'pending' && $booking->payment && $booking->payment->payment_method === 'cash')
+                        <div class="bg-indigo-500/5 border border-indigo-500/20 rounded-xl p-4 text-center mt-4">
+                            <p class="text-indigo-300 text-xs font-semibold">Silakan lakukan pembayaran tunai atau QRIS secara langsung kepada kasir di studio saat sesi foto Anda berlangsung.</p>
                         </div>
                     @elseif($booking->status == 'paid')
                         <div class="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-4 text-center">

@@ -90,8 +90,45 @@
                 </div>
             </div>
 
-            <form action="{{ route('booking.store') }}" method="POST">
+            <form action="{{ route('booking.store') }}" method="POST" class="space-y-6">
                 @csrf
+                
+                <div class="bg-slate-900/40 rounded-2xl p-5 border border-white/[0.05] shadow-inner mt-6">
+                    <h3 class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-4 font-mono">Pilih Metode Pembayaran</h3>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <!-- QRIS -->
+                        <label class="relative block cursor-pointer group">
+                            <input type="radio" name="payment_method" value="qris" checked class="peer sr-only">
+                            <div class="bg-slate-950/40 border border-white/5 hover:border-indigo-500/30 rounded-xl p-4 text-center transition-all peer-checked:bg-indigo-500/10 peer-checked:border-indigo-500 peer-checked:text-white">
+                                <svg class="w-6 h-6 text-indigo-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <span class="block font-bold text-xs text-white">QRIS</span>
+                                <span class="block text-[9px] text-slate-500 mt-1">E-Wallet / Instant</span>
+                            </div>
+                        </label>
+                        
+                        <!-- Transfer Bank -->
+                        <label class="relative block cursor-pointer group">
+                            <input type="radio" name="payment_method" value="transfer" class="peer sr-only">
+                            <div class="bg-slate-950/40 border border-white/5 hover:border-indigo-500/30 rounded-xl p-4 text-center transition-all peer-checked:bg-indigo-500/10 peer-checked:border-indigo-500 peer-checked:text-white">
+                                <svg class="w-6 h-6 text-indigo-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                                <span class="block font-bold text-xs text-white">Transfer</span>
+                                <span class="block text-[9px] text-slate-500 mt-1">ATM / VA</span>
+                            </div>
+                        </label>
+                        
+                        <!-- Cash -->
+                        <label class="relative block cursor-pointer group">
+                            <input type="radio" name="payment_method" value="cash" class="peer sr-only">
+                            <div class="bg-slate-950/40 border border-white/5 hover:border-indigo-500/30 rounded-xl p-4 text-center transition-all peer-checked:bg-indigo-500/10 peer-checked:border-indigo-500 peer-checked:text-white">
+                                <svg class="w-6 h-6 text-indigo-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                <span class="block font-bold text-xs text-white">Cash</span>
+                                <span class="block text-[9px] text-slate-500 mt-1">Bayar di Tempat</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
                 <div class="flex items-center justify-between pt-6 border-t border-white/[0.05] gap-4">
                     <a href="{{ route('booking.step3') }}" class="text-xs font-bold text-slate-400 hover:text-white bg-white/5 px-4 py-2.5 border border-white/5 rounded-xl transition-all hover:scale-[1.02]">
                         Ubah Data Diri
