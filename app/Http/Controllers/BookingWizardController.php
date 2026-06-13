@@ -102,10 +102,10 @@ class BookingWizardController extends Controller
             $isAvailable = true;
             $statusReason = '';
 
-            // Check if slot starts in the past (if date is today)
-            if (Carbon::parse($selectedDate)->isToday() && $start->isBefore(Carbon::now())) {
+            // Check if slot starts in the past or less than 30 minutes from now (if date is today)
+            if (Carbon::parse($selectedDate)->isToday() && $start->isBefore(Carbon::now()->addMinutes(30))) {
                 $isAvailable = false;
-                $statusReason = 'Past Time';
+                $statusReason = 'Terlalu Dekat (Min. 30 Menit)';
             }
 
             // Check Booking Overlap
@@ -155,6 +155,15 @@ class BookingWizardController extends Controller
             ]);
 
             list($slotStart, $slotEnd) = explode('-', $request->slot);
+
+            // Validate that the slot start time is at least 30 minutes in the future from now
+            $bookingDate = Carbon::parse($request->date);
+            if ($bookingDate->isToday()) {
+                $slotStartTime = Carbon::parse($request->date . ' ' . $slotStart);
+                if ($slotStartTime->isBefore(Carbon::now()->addMinutes(30))) {
+                    return back()->withInput()->withErrors(['slot' => 'Waktu booking minimal harus 30 menit dari sekarang.']);
+                }
+            }
 
             $sessionData['booking_date'] = $request->date;
             $sessionData['start_time'] = $slotStart;
@@ -232,6 +241,15 @@ class BookingWizardController extends Controller
 
         if ($overlap) {
             return redirect()->route('booking.step2')->withErrors(['slot' => 'Maaf, slot waktu ini baru saja dipesan oleh orang lain. Silakan pilih slot lain.']);
+        }
+
+        // Validate that the slot is still at least 30 minutes in the future
+        $bookingDate = Carbon::parse($sessionData['booking_date']);
+        if ($bookingDate->isToday()) {
+            $slotStartTime = Carbon::parse($sessionData['booking_date'] . ' ' . $sessionData['start_time']);
+            if ($slotStartTime->isBefore(Carbon::now()->addMinutes(30))) {
+                return redirect()->route('booking.step2')->withErrors(['slot' => 'Batas waktu pemesanan untuk slot ini sudah habis (minimal 30 menit sebelum sesi dimulai). Silakan pilih slot waktu lain.']);
+            }
         }
 
         // Validate payment method

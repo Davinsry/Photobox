@@ -59,29 +59,82 @@
                     <div>
                         <label for="blocked_date" class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 font-mono">Tanggal Blokir</label>
                         <input type="date" name="blocked_date" id="blocked_date" 
-                               min="{{ \Carbon\Carbon::today()->toDateString() }}" required
-                               class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors">
+                               min="{{ \Carbon\Carbon::today()->toDateString() }}" 
+                               value="{{ old('blocked_date', $selectedDate) }}" required
+                               onchange="window.location.href = '{{ route('admin.jadwal.index') }}?date=' + this.value"
+                               class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors cursor-pointer">
                     </div>
 
                     <!-- Full day check -->
                     <div class="flex items-center">
-                        <input type="checkbox" name="is_full_day" id="is_full_day" value="1" checked
-                               onchange="document.getElementById('time-block-inputs').style.display = this.checked ? 'none' : 'grid'"
+                        <input type="checkbox" name="is_full_day" id="is_full_day" value="1" 
+                               {{ old('is_full_day', '1') == '1' ? 'checked' : '' }}
+                               onchange="document.getElementById('time-block-inputs').style.display = this.checked ? 'none' : 'block'"
                                class="rounded border-slate-800 text-indigo-500 focus:ring-indigo-500 bg-slate-950 w-4.5 h-4.5 cursor-pointer">
                         <label for="is_full_day" class="ml-2.5 text-xs font-semibold text-slate-300 cursor-pointer select-none">Blokir Sehari Penuh (Libur)</label>
                     </div>
 
                     <!-- Time slots block inputs -->
-                    <div id="time-block-inputs" class="grid grid-cols-2 gap-4" style="display: none;">
-                        <div>
-                            <label for="start_time" class="block text-xxs font-bold uppercase tracking-wider text-slate-400 mb-1.5 font-mono">Mulai Jam</label>
-                            <input type="time" name="start_time" id="start_time" 
-                                   class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors">
+                    <div id="time-block-inputs" style="display: none;" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="start_time" class="block text-xxs font-bold uppercase tracking-wider text-slate-400 mb-1.5 font-mono">Mulai Jam</label>
+                                <input type="time" name="start_time" id="start_time" readonly
+                                       class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors cursor-not-allowed">
+                            </div>
+                            <div>
+                                <label for="end_time" class="block text-xxs font-bold uppercase tracking-wider text-slate-400 mb-1.5 font-mono">Selesai Jam</label>
+                                <input type="time" name="end_time" id="end_time" readonly
+                                       class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors cursor-not-allowed">
+                            </div>
                         </div>
+
+                        <!-- Real-time Slot Grid -->
                         <div>
-                            <label for="end_time" class="block text-xxs font-bold uppercase tracking-wider text-slate-400 mb-1.5 font-mono">Selesai Jam</label>
-                            <input type="time" name="end_time" id="end_time" 
-                                   class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 font-mono">Pilih Slot Waktu Untuk Diblokir</label>
+                            <p class="text-xxs text-slate-500 mb-3">Klik slot untuk memilih waktu mulai dan waktu selesai.</p>
+                            
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="slot-grid-container">
+                                @foreach($slots as $index => $slot)
+                                    @php
+                                        $btnClass = '';
+                                        $statusText = '';
+                                        $isDisabled = false;
+
+                                        if ($slot['status'] === 'booked') {
+                                            $btnClass = 'border-amber-500/30 bg-amber-950/20 text-amber-400 cursor-not-allowed';
+                                            $statusText = $slot['info'];
+                                            $isDisabled = true;
+                                        } elseif ($slot['status'] === 'blocked') {
+                                            $btnClass = 'border-rose-500/20 bg-rose-950/15 text-rose-400 cursor-not-allowed';
+                                            $statusText = $slot['info'];
+                                            $isDisabled = true;
+                                        } elseif ($slot['status'] === 'past') {
+                                            $btnClass = 'border-slate-850 bg-slate-900/40 text-slate-600 cursor-not-allowed';
+                                            $statusText = $slot['info'];
+                                            $isDisabled = true;
+                                        } else {
+                                            $btnClass = 'border-slate-800 bg-slate-950 hover:border-indigo-500/50 text-slate-300 cursor-pointer';
+                                            $statusText = 'Tersedia';
+                                        }
+                                    @endphp
+                                    <button type="button" 
+                                            class="border rounded-xl p-2.5 text-center transition-all text-[10px] font-bold relative flex flex-col items-center justify-center gap-0.5 select-none admin-slot-btn {{ $btnClass }}"
+                                            data-start="{{ $slot['start'] }}"
+                                            data-end="{{ $slot['end'] }}"
+                                            data-index="{{ $index }}"
+                                            @if($isDisabled) disabled @endif>
+                                        <span class="text-xs font-black">{{ $slot['start'] }}</span>
+                                        <span class="text-[9px] opacity-70">{{ $slot['start'] }} - {{ $slot['end'] }}</span>
+                                        <span class="text-[8px] font-medium tracking-tight mt-0.5 truncate max-w-full uppercase font-mono">{{ $statusText }}</span>
+                                    </button>
+                                @endforeach
+                            </div>
+                            
+                            <button type="button" id="reset-selection-btn" class="mt-2.5 text-xxs text-indigo-400 hover:text-indigo-300 font-bold hidden flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3m-3-3v12"></path></svg>
+                                Reset Pilihan Slot
+                            </button>
                         </div>
                     </div>
 
@@ -151,4 +204,101 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const isFullDayCheckbox = document.getElementById('is_full_day');
+    const timeBlockInputs = document.getElementById('time-block-inputs');
+    const startTimeInput = document.getElementById('start_time');
+    const endTimeInput = document.getElementById('end_time');
+    const slotButtons = document.querySelectorAll('.admin-slot-btn');
+    const resetBtn = document.getElementById('reset-selection-btn');
+
+    // Make sure initial state matches checkbox
+    timeBlockInputs.style.display = isFullDayCheckbox.checked ? 'none' : 'block';
+    
+    isFullDayCheckbox.addEventListener('change', function() {
+        timeBlockInputs.style.display = this.checked ? 'none' : 'block';
+        if (this.checked) {
+            resetSelection();
+        }
+    });
+
+    let selectedStartIndex = null;
+    let selectedEndIndex = null;
+
+    slotButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const index = parseInt(this.getAttribute('data-index'));
+
+            if (selectedStartIndex === null) {
+                // First click: select start slot
+                selectedStartIndex = index;
+                selectedEndIndex = index;
+            } else if (selectedStartIndex !== null && selectedEndIndex === selectedStartIndex) {
+                // Second click: select end slot
+                if (index < selectedStartIndex) {
+                    selectedEndIndex = selectedStartIndex;
+                    selectedStartIndex = index;
+                } else {
+                    selectedEndIndex = index;
+                }
+            } else {
+                // Third click: reset and select new start slot
+                selectedStartIndex = index;
+                selectedEndIndex = index;
+            }
+
+            updateSlotHighlighting();
+        });
+    });
+
+    resetBtn.addEventListener('click', function() {
+        resetSelection();
+    });
+
+    function resetSelection() {
+        selectedStartIndex = null;
+        selectedEndIndex = null;
+        startTimeInput.value = '';
+        endTimeInput.value = '';
+        updateSlotHighlighting();
+    }
+
+    function updateSlotHighlighting() {
+        let hasSelection = selectedStartIndex !== null;
+        
+        if (hasSelection) {
+            resetBtn.classList.remove('hidden');
+            
+            // Get start time and end time
+            const startBtn = document.querySelector(`.admin-slot-btn[data-index="${selectedStartIndex}"]`);
+            const endBtn = document.querySelector(`.admin-slot-btn[data-index="${selectedEndIndex}"]`);
+            
+            startTimeInput.value = startBtn.getAttribute('data-start');
+            endTimeInput.value = endBtn.getAttribute('data-end');
+        } else {
+            resetBtn.classList.add('hidden');
+            startTimeInput.value = '';
+            endTimeInput.value = '';
+        }
+
+        slotButtons.forEach(btn => {
+            if (btn.disabled) return;
+            
+            const index = parseInt(btn.getAttribute('data-index'));
+            
+            if (hasSelection && index >= selectedStartIndex && index <= selectedEndIndex) {
+                // Highlight range
+                btn.classList.remove('border-slate-800', 'bg-slate-950', 'text-slate-300', 'hover:border-indigo-500/50');
+                btn.classList.add('border-indigo-500', 'bg-gradient-to-r', 'from-indigo-500/20', 'to-purple-600/20', 'text-white', 'ring-2', 'ring-indigo-500/20');
+            } else {
+                // Normal available slot style
+                btn.classList.remove('border-indigo-500', 'bg-gradient-to-r', 'from-indigo-500/20', 'to-purple-600/20', 'text-white', 'ring-2', 'ring-indigo-500/20');
+                btn.classList.add('border-slate-800', 'bg-slate-950', 'text-slate-300', 'hover:border-indigo-500/50');
+            }
+        });
+    }
+});
+</script>
 @endsection
